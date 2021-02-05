@@ -175,6 +175,45 @@ def processTradeData(all_trade_df=None, restart=False):
 
     return processed_trade, sorted_item_list
 
+def readTranstats(restart=False):
+    processed_filename = '../data/processed/transtats.p'
+    if not restart:
+        f = open(processed_filename, 'rb')
+        transtats_dict = pickle.load(f)
+    else:
+        filepath = '../data/transtats/'
+        transtats_dict = {}
+        for year in range(1990, 2020):
+            print('Processing year: {}...'.format(year))
+            annual_transtats = {}
+            filename = filepath + 'transtats_{}.csv'.format(year)
+            annual_transtats_df = pd.read_csv(filename)
+            for i, row in annual_transtats_df.iterrows():
+                seats           = row['SEATS']
+                passengers      = row['PASSENGERS']
+                freight         = row['FREIGHT']
+                mail            = row['MAIL']
+                distance        = row['DISTANCE']
+                origin_country  = row['ORIGIN_COUNTRY']
+                dest_country    = row['DEST_COUNTRY']
+
+                if (type(origin_country) is str) and (type(dest_country) is str):
+                    route = origin_country + ' ' + dest_country
+                    if route in annual_transtats:
+                        annual_transtats[route]['count'] += 1
+                        annual_transtats[route]['passengers'] += passengers
+                        annual_transtats[route]['freight'] += freight
+                    else:
+                        annual_transtats[route] = {}
+                        annual_transtats[route]['count'] = 1
+                        annual_transtats[route]['passengers'] = passengers
+                        annual_transtats[route]['freight'] = freight
+            transtats_dict[year] = annual_transtats
+        f = open(processed_filename, 'wb')
+        pickle.dump(transtats_dict, f)
+
+    return transtats_dict
+
 def plotFlights(trade_df, country2ll, item_name, count):
      
     # Add a connection between new york and London
@@ -355,7 +394,9 @@ if __name__ == '__main__':
     WDI_df = readWorldIndicators()
     country2ll = readCountry()
 
-    # '''
+    transtats_dict = readTranstats(restart=False)
+
+    '''
     if preprocess == True:
         all_trade_df = readTradeData()
         processed_trade, item_list = processTradeData(all_trade_df, restart=True)
