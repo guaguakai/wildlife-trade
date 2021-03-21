@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 
 from sklearn import linear_model
-from sklearn.metrics import mean_squared_error, mean_absolute_error, mean_absolute_percentage_error, r2_score
+from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 from sklearn import preprocessing
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.utils import shuffle
@@ -33,13 +33,10 @@ if __name__ == '__main__':
         count = sum(large_trade_df['Taxon'] == item_name)
         processed_item_list.append((item_name, count))
 
-    sorted_item_list = sorted(processed_item_list, key=lambda x: x[1], reverse=True)
+    sorted_item_list = sorted(processed_item_list, key=lambda x: x[1], reverse=True)[:10]
 
     for i, (item_name, count) in enumerate(sorted_item_list):
         print(item_name)
         plotFlights(large_trade_df[large_trade_df['Taxon'] == item_name], country2ll, item_name='{}_{}'.format(i+1,item_name), count=count)
 
-    # =================== plotting GDP vs trade ===================
-    WDI_df = readWorldIndicators()
-    plotSmugglingAmount(all_trade_df)
 

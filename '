@@ -1,0 +1,86 @@
+import pandas as pd
+import numpy as np
+import pickle
+import tqdm
+import os
+import networkx as nx
+
+from os import path
+from mpl_toolkits.basemap import Basemap
+import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
+from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+
+import torch
+from torch.utils.data import TensorDataset, DataLoader
+
+from utils import *
+from model import *
+from gcn import GCN
+
+if __name__ == '__main__':
+    preprocess = True
+    restart = False
+
+    WDI_df = readWorldIndicators()
+    country2ll = readCountry()
+
+    _, (gcn_train_data, gcn_test_data), item_list = compileData(preprocess=preprocess, restart=restart)
+
+    full_feature_size = 411 # 10
+
+    # training GCN
+    # model initiailization
+    lr = 0.001
+    model = GCN(raw_feature_size=full_feature_size)
+    optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+
+    # loss functions
+    mse_loss = nn.MSELoss()
+    mae_loss = nn.L1Loss()
+    loss_fn = mse_loss
+
+    # training
+    for epoch in range(10001):
+        train_r2_list, train_mae_list, train_mse_list = [], [], []
+        test_r2_list,  test_mae_list,  test_mse_list  = [], [], []
+        loaders = [
+                ('train', gcn_train_data, train_r2_list, train_mae_list, train_mse_list),
+                ('test',  gcn_test_data,  test_r2_list,  test_mae_list,  test_mse_list)
+                ]
+        for mode, loader, r2_list, mae_list, mse_list in loaders:
+            # for node_graph, node_features, edge_graph, edge_features, edge_labels, route2index in tqdm.tqdm(loader):
+            for _, _, edge_graph, features, labels, route2index in tqdm.tqdm(loader):
+                if len(features) == 0:
+                    continue
+                # features = features[:,-full_feature_size-1:-1]
+                edge_index = torch.Tensor(list(edge_graph.edges())).long().t()
+
+                if mode == 'train':
+                    model.train()
+                    predictions = model(features, edge_index).flatten()
+                    loss = loss_fn(predictions, labels)
+                    optimizer.zero_grad()
+                    loss.backward()
+                    optimizer.step()
+                else:
+                    model.eval()
+                    predictions = model(features, edge_index).flatten()
+
+                labels = labels.detach()
+                predictions = predictions.detach()
+
+                r2      = r2_score(labels.numpy(), predictions.numpy())
+                mae     = mae_loss(labels, predictions).item()
+                mse     = mse_loss(labels, predictions).item()
+
+            r2_list.append(r2)
+            mae_list.append(mae)
+            mse_list.append(mse)
+
+        train_r2, train_mae, train_mse = np.mean(train_r2_list), np.mean(train_mae_list), np.mean(train_mse_list)
+        print('Epoch {}, training set r2 score: {}, mae: {}, mse: {}'.format(epoch, train_r2, train_mae, train_mse))
+        if epoch % 100 == 0:
+            test_r2,  test_mae, test_mse  = np.mean(test_r2_list),  np.mean(test_mae_list), np.mean(test_mse_list)
+            print('Epoch {}, testing set r2 score: {},  mae: {}, mse: {}'.format(epoch, test_r2, test_mae, test_mse))
+
