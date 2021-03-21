@@ -6,7 +6,6 @@ import os
 import networkx as nx
 
 from os import path
-from mpl_toolkits.basemap import Basemap
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
@@ -18,8 +17,8 @@ from utils import *
 from model import *
 
 if __name__ == '__main__':
-    preprocess = False
-    restart = False
+    preprocess = True
+    restart = True
 
     WDI_df = readWorldIndicators()
     country2ll = readCountry()

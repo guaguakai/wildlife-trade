@@ -8,7 +8,6 @@ import networkx as nx
 import torch
 
 from os import path
-from mpl_toolkits.basemap import Basemap
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 
@@ -339,7 +338,7 @@ def compileData(preprocess=False, processed_trade=None, item_list=None):
 
 
 def plotFlights(trade_df, country2ll, item_name, count):
-     
+    from mpl_toolkits.basemap import Basemap
     # Add a connection between new york and London
     year_list = [x for x in range(1980, 2019)]
     trade_quantity = {}

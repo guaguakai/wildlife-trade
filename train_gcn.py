@@ -6,7 +6,6 @@ import os
 import networkx as nx
 
 from os import path
-from mpl_toolkits.basemap import Basemap
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
@@ -14,7 +13,7 @@ from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 import torch
 from torch.utils.data import TensorDataset, DataLoader
 
-from utils import *
+from utils import processTradeData, readTradeData, readCountry, readWorldIndicators, compileData
 from model import *
 from gcn import GCN
 
