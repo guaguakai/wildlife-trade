@@ -172,7 +172,8 @@ def processTradeData(all_trade_df=None, restart=False):
                 route_trade_df = item_trade_df[(item_trade_df['Exporter'] == exporter) & (item_trade_df['Importer'] == importer)]
 
                 for year in year_list:
-                    trade_quantity = np.sum(route_trade_df[(route_trade_df['Year'] == year)]['Quantity'])
+                    trade_quantity = len(route_trade_df[(route_trade_df['Year'] == year)])
+                    # trade_quantity = np.sum(route_trade_df[(route_trade_df['Year'] == year)]['Quantity'])
                     processed_trade[item_name][route_name][year] = trade_quantity
 
         with open(processed_filename, 'wb') as f:
