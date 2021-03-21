@@ -2,7 +2,7 @@ from __future__ import print_function
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch_geometric.nn import GCNConv, GraphConv, SAGEConv, GatedGraphConv, GATConv
+from torch_geometric.nn import GCNConv, GraphConv, SAGEConv, GatedGraphConv, GATConv, BatchNorm
 
 from torch_geometric.nn import MessagePassing
 from torch_geometric.utils import add_self_loops, degree
@@ -11,8 +11,27 @@ aggregation_function = 'add' # either mean or add
 
 Conv = GraphConv
 
-class GCN(nn.Module):
+def linear_block(in_channels, out_channels, activation='ReLU'):
+    if activation == 'ReLU':
+        return nn.Sequential(
+               nn.Linear(in_channels, out_channels),
+               nn.BatchNorm1d(out_channels),
+               torch.nn.Dropout(p=0.5),
+               nn.ReLU()
+               )
+    elif activation == 'Sigmoid':
+        return nn.Sequential(
+               nn.Linear(in_channels, out_channels),
+               nn.BatchNorm1d(out_channels),
+               torch.nn.Dropout(p=0.5),
+               nn.Sigmoid()
+               )
+    elif activation == None:
+        return nn.Sequential(
+               nn.Linear(in_channels, out_channels),
+               )
 
+class GCN(nn.Module):
     def __init__(self, raw_feature_size, gcn_hidden_layer_sizes=[128, 128, 64, 64], nn_hidden_layer_sizes=[2048, 1024, 32]):
         super(GCN, self).__init__()
 
@@ -26,12 +45,19 @@ class GCN(nn.Module):
         self.gcn3 = Conv(r2, r3, aggr=aggregation_function)
         self.gcn4 = Conv(r3, r4, aggr=aggregation_function)
 
+        self.batchnorm1 = BatchNorm(r1)
+        self.batchnorm2 = BatchNorm(r2)
+        self.batchnorm3 = BatchNorm(r3)
+        self.batchnorm4 = BatchNorm(r4)
+
         #Define the layers of NN to predict the attractiveness function for every node
         # self.fc1 = nn.Linear(r2, 1)
-        self.fc1 = nn.Linear(r4, n1)
-        self.fc2 = nn.Linear(n1, n2)
-        self.fc3 = nn.Linear(n2, n3)
-        self.fc4 = nn.Linear(n3, 1)
+        self.nn_linear = nn.Sequential(
+                linear_block(r4, n1),
+                linear_block(n1, n2),
+                linear_block(n2, n3),
+                linear_block(n3, 1, activation=None),
+                )
 
         # self.activation = nn.Softplus()
         self.activation = F.relu
@@ -52,20 +78,18 @@ class GCN(nn.Module):
 
         x = self.activation(self.gcn1(x, edge_index))
         x = self.dropout(x)
+        x = self.batchnorm1(x)
         x = self.activation(self.gcn2(x, edge_index))
         x = self.dropout(x)
+        x = self.batchnorm2(x)
         x = self.activation(self.gcn3(x, edge_index))
         x = self.dropout(x)
+        x = self.batchnorm3(x)
         x = self.activation(self.gcn4(x, edge_index))
         x = self.dropout(x)
+        x = self.batchnorm4(x)
 
-        x = self.activation(self.fc1(x))
-        x = self.dropout(x)
-        x = self.activation(self.fc2(x))
-        x = self.dropout(x)
-        x = self.activation(self.fc3(x))
-        x = self.dropout(x)
-        x = self.fc4(x)
+        x = self.nn_linear(x)
 
         return x
 

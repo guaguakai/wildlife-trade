@@ -37,6 +37,9 @@ if __name__ == '__main__':
 
     full_feature_size = 410 # 10
 
+    train_label_mean = torch.mean(torch.cat([gcn_train_data[i][4] for i in range(len(gcn_train_data))]))
+    test_label_mean  = torch.mean(torch.cat([gcn_test_data[i][4]  for i in range(len(gcn_test_data))]))
+
     # compute normalizing constant
     all_train_features = []
     for _, _, _, features, _, _ in gcn_train_data:
@@ -51,7 +54,7 @@ if __name__ == '__main__':
     # training GCN
     # model initiailization
     device = 'cuda'
-    lr = 0.001
+    lr = 0.01
     model = GCN(raw_feature_size=full_feature_size)
     model = model.to(device=device)
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
@@ -113,13 +116,14 @@ if __name__ == '__main__':
 
         train_r2, train_mae, train_mse = np.sum(train_r2_list) / train_counter, np.sum(train_mae_list) / train_counter, np.sum(train_mse_list) / train_counter
         test_r2,  test_mae, test_mse  = np.sum(test_r2_list) / test_counter,  np.sum(test_mae_list) / test_counter, np.sum(test_mse_list) / test_counter
+        train_nmse, test_nmse = train_mse / train_label_mean ** 2, test_mse / test_label_mean ** 2
 
-        f_train_result.write('epoch, {}, r2, {}, mae, {}, mse, {}\n'.format(epoch, train_r2, train_mae, train_mse))
-        f_test_result.write('epoch, {}, r2, {}, mae, {}, mse, {}\n'.format(epoch, test_r2, test_mae, test_mse))
+        f_train_result.write('epoch, {}, r2, {}, mae, {}, mse, {}, nmse, {}\n'.format(epoch, train_r2, train_mae, train_mse, train_nmse))
+        f_test_result.write('epoch, {}, r2, {}, mae, {}, mse, {}, nmse, {}\n'.format(epoch, test_r2, test_mae, test_mse, test_nmse))
 
         if epoch % 1 == 0:
-            print('Epoch {}, training set r2 score: {}, mae: {}, mse: {}'.format(epoch, train_r2, train_mae, train_mse))
-            print('Epoch {}, testing set r2 score: {},  mae: {}, mse: {}'.format(epoch, test_r2, test_mae, test_mse))
+            print('Epoch {}, training set r2 score: {}, mae: {}, mse: {}, nmse: {}'.format(epoch, train_r2, train_mae, train_mse, train_nmse))
+            print('Epoch {}, testing set r2 score: {},  mae: {}, mse: {}, nmse: {}'.format(epoch, test_r2, test_mae, test_mse, test_nmse))
 
     f_train_result.close()
     f_test_result.close()

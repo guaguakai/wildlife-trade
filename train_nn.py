@@ -65,7 +65,7 @@ if __name__ == '__main__':
 
     # model initiailization
     device = 'cuda'
-    lr = 0.001
+    lr = 0.01
     fullModel = FullModel(input_size=full_feature_size)
     fullModel = fullModel.to(device=device)
     optimizer = torch.optim.Adam(fullModel.parameters(), lr=lr)
@@ -121,11 +121,12 @@ if __name__ == '__main__':
 
         train_r2, train_mae, train_mse = np.mean(train_r2_list), np.mean(train_mae_list), np.mean(train_mse_list)
         test_r2,  test_mae,  test_mse  = np.mean(test_r2_list),  np.mean(test_mae_list),  np.mean(test_mse_list)
+        train_nmse, test_nmse = train_mse / torch.mean(train_label) ** 2, test_mse / torch.mean(test_label) ** 2
 
-        f_train_result.write('epoch, {}, r2, {}, mae, {}, mse, {}\n'.format(epoch, train_r2, train_mae, train_mse))
-        f_test_result.write('epoch, {}, r2, {}, mae, {}, mse, {}\n'.format(epoch, test_r2, test_mae, test_mse))
+        f_train_result.write('epoch, {}, r2, {}, mae, {}, mse, {}, nmse, {}\n'.format(epoch, train_r2, train_mae, train_mse, train_nmse))
+        f_test_result.write('epoch, {}, r2, {}, mae, {}, mse, {}, nmse, {}\n'.format(epoch, test_r2, test_mae, test_mse, test_nmse))
 
         if epoch % 1 == 0:
-            print('Epoch {}, training set r2 score: {}, mae: {}, mse: {}'.format(epoch, train_r2, train_mae, train_mse))
-            print('Epoch {}, testing set r2 score: {},  mae: {}, mse: {}'.format(epoch, test_r2, test_mae, test_mse))
+            print('Epoch {}, training set r2 score: {}, mae: {}, mse: {}, nmse: {}'.format(epoch, train_r2, train_mae, train_mse, train_nmse))
+            print('Epoch {}, testing set r2 score: {},  mae: {}, mse: {}, nmse: {}'.format(epoch, test_r2, test_mae, test_mse, test_nmse))
 
