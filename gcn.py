@@ -77,16 +77,16 @@ class GCN(nn.Module):
         '''
 
         x = self.activation(self.gcn1(x, edge_index))
-        x = self.dropout(x)
+        # x = self.dropout(x)
         x = self.batchnorm1(x)
         x = self.activation(self.gcn2(x, edge_index))
-        x = self.dropout(x)
+        # x = self.dropout(x)
         x = self.batchnorm2(x)
         x = self.activation(self.gcn3(x, edge_index))
-        x = self.dropout(x)
+        # x = self.dropout(x)
         x = self.batchnorm3(x)
         x = self.activation(self.gcn4(x, edge_index))
-        x = self.dropout(x)
+        # x = self.dropout(x)
         x = self.batchnorm4(x)
 
         x = self.nn_linear(x)

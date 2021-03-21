@@ -9,6 +9,8 @@ from mpl_toolkits.basemap import Basemap
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 
+import seaborn as sns
+
 from sklearn import linear_model
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 from sklearn import preprocessing
@@ -66,6 +68,14 @@ if __name__ == '__main__':
     train_data = train_data[:,-1:]
     test_data  = test_data[:,-1:]
 
+    # plotting histograms
+    sns.displot(x=train_label)
+    plt.show()
+
+    sns.displot(x=test_label)
+    plt.show()
+
+    # setting up regression model
     # reg = linear_model.TweedieRegressor(power=1, alpha=0.5, link='log')
     # reg = linear_model.Ridge(alpha=0.5)
     reg = linear_model.Lasso(alpha=0.5)

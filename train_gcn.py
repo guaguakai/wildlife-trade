@@ -54,7 +54,7 @@ if __name__ == '__main__':
     # training GCN
     # model initiailization
     device = 'cuda'
-    lr = 0.01
+    lr = 0.005
     model = GCN(raw_feature_size=full_feature_size)
     model = model.to(device=device)
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
