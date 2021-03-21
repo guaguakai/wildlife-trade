@@ -17,8 +17,8 @@ from utils import *
 from model import *
 
 if __name__ == '__main__':
-    preprocess = True
-    restart = True
+    preprocess = False
+    restart = False
 
     WDI_df = readWorldIndicators()
     country2ll = readCountry()
@@ -28,7 +28,6 @@ if __name__ == '__main__':
     else:
         all_trade_df = None
     processed_trade, item_list = processTradeData(all_trade_df, restart=restart)
-    item_list = item_list[:10]
     (all_train_dict, all_test_dict), _ = compileData(preprocess=preprocess, processed_trade=processed_trade, item_list=item_list)
 
     full_feature_size = 410
@@ -64,7 +63,7 @@ if __name__ == '__main__':
 
     # model initiailization
     device = 'cuda'
-    lr = 0.005
+    lr = 0.001
     fullModel = FullModel(input_size=full_feature_size)
     fullModel = fullModel.to(device=device)
     optimizer = torch.optim.Adam(fullModel.parameters(), lr=lr)
