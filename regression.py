@@ -69,11 +69,11 @@ if __name__ == '__main__':
     test_data  = test_data[:,-1:]
 
     # plotting histograms
-    sns.displot(x=train_label)
-    plt.show()
+    # sns.displot(x=train_label)
+    # plt.show()
 
-    sns.displot(x=test_label)
-    plt.show()
+    # sns.displot(x=test_label)
+    # plt.show()
 
     # setting up regression model
     # reg = linear_model.TweedieRegressor(power=1, alpha=0.5, link='log')
