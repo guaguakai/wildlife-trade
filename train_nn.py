@@ -18,7 +18,7 @@ from utils import processTradeData, readTradeData, readCountry, readWorldIndicat
 from model import FullModel
 
 if __name__ == '__main__':
-    preprocess = False
+    preprocess = True
     restart = False
 
     WDI_df = readWorldIndicators()
@@ -30,29 +30,24 @@ if __name__ == '__main__':
         all_trade_df = None
     processed_trade, item_list = processTradeData(all_trade_df, restart=restart)
     item_list = item_list[:10]
-    (all_train_dict, all_test_dict), _ = compileData(preprocess=preprocess, processed_trade=processed_trade, item_list=item_list)
+    gcn_data = compileData(preprocess=preprocess, processed_trade=processed_trade, item_list=item_list)
+
+    data_size = len(gcn_data)
+    train_size = int(data_size * 0.8)
+    test_size  = data_size - train_size
+    gcn_train_data = gcn_data[:train_size]
+    gcn_test_data  = gcn_data[train_size:]
+
+    # ========== using gcn data to form nn data ==============
+    train_data  = torch.cat([gcn_train_data[i][3] for i in range(len(gcn_train_data))])
+    train_label = torch.cat([gcn_train_data[i][4] for i in range(len(gcn_train_data))])
+    test_data   = torch.cat([gcn_test_data[i][3] for i in range(len(gcn_test_data))])
+    test_label  = torch.cat([gcn_test_data[i][4] for i in range(len(gcn_test_data))])
 
     full_feature_size = 410
     export_feature_size = 1001
     attractiveness_feature_size = 1001
     friction_feature_size = 2001
-
-    # merging nn data
-    train_data, train_label, test_data, test_label = [], [], [], []
-    for item_name, _ in item_list:
-        print(item_name)
-        tmp_train_data, tmp_train_label = all_train_dict[item_name]['data'], all_train_dict[item_name]['label']
-        tmp_test_data,  tmp_test_label  = all_test_dict[item_name]['data'],  all_test_dict[item_name]['label']
-
-        train_data.append(tmp_train_data)
-        train_label.append(tmp_train_label)
-        test_data.append(tmp_test_data)
-        test_label.append(tmp_test_label)
-
-    train_data  = torch.cat(train_data)
-    train_label = torch.cat(train_label)
-    test_data   = torch.cat(test_data)
-    test_label  = torch.cat(test_label)
 
     # normalization
     train_mean = torch.mean(train_data, dim=0)
@@ -86,7 +81,7 @@ if __name__ == '__main__':
     f_test_result  = open('results/nn/test.csv', 'a')
 
     # training
-    for epoch in range(10001):
+    for epoch in range(5001):
         train_r2_list, train_mae_list, train_mse_list = [], [], []
         test_r2_list,  test_mae_list,  test_mse_list  = [], [], []
         loaders = [

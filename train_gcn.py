@@ -31,7 +31,13 @@ if __name__ == '__main__':
         all_trade_df = None
     processed_trade, item_list = processTradeData(all_trade_df, restart=restart)
     item_list = item_list[:10]
-    _, (gcn_train_data, gcn_test_data) = compileData(preprocess=preprocess, processed_trade=processed_trade, item_list=item_list)
+    gcn_data = compileData(preprocess=preprocess, processed_trade=processed_trade, item_list=item_list)
+
+    data_size = len(gcn_data)
+    train_size = int(data_size * 0.8)
+    test_size  = data_size - train_size
+    gcn_train_data = gcn_data[:train_size]
+    gcn_test_data  = gcn_data[train_size:]
 
     full_feature_size = 410 # 10
 

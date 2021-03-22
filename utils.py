@@ -297,44 +297,50 @@ def compileData(preprocess=False, processed_trade=None, item_list=None):
                 #     gcn_test_data.append((node_graph, torch.Tensor(node_features), edge_graph, torch.Tensor(edge_features), torch.Tensor(edge_labels), route2index))
 
             # =================== nn data shuffling ==================
-            all_data, all_label = shuffle(all_data, all_label)
+            # all_data, all_label = shuffle(all_data, all_label)
 
-            data_size = len(all_data)
-            train_size = int(data_size * 0.8)
-            test_size  = data_size - train_size
-            train_data,  test_data  = all_data[:train_size],  all_data[train_size:]
-            train_label, test_label = all_label[:train_size], all_label[train_size:]
+            # data_size = len(all_data)
+            # train_size = int(data_size * 0.8)
+            # test_size  = data_size - train_size
+            # train_data,  test_data  = all_data[:train_size],  all_data[train_size:]
+            # train_label, test_label = all_label[:train_size], all_label[train_size:]
 
-            train_data, test_data   = torch.Tensor(train_data),  torch.Tensor(test_data)
-            train_label, test_label = torch.Tensor(train_label), torch.Tensor(test_label)
+            # train_data, test_data   = torch.Tensor(train_data),  torch.Tensor(test_data)
+            # train_label, test_label = torch.Tensor(train_label), torch.Tensor(test_label)
 
-            all_train_dict[item_name] = {'data': train_data, 'label': train_label}
-            all_test_dict[item_name]  = {'data': test_data,  'label': test_label}
+            # all_train_dict[item_name] = {'data': train_data, 'label': train_label}
+            # all_test_dict[item_name]  = {'data': test_data,  'label': test_label}
 
             # =================== gcn data shuffing ==================
             gcn_data = shuffle(gcn_data)
 
-            data_size = len(gcn_data)
-            train_size = int(data_size * 0.8)
-            test_size  = data_size - train_size
-            gcn_train_data = gcn_data[:train_size]
-            gcn_test_data  = gcn_data[train_size:]
+            # data_size = len(gcn_data)
+            # train_size = int(data_size * 0.8)
+            # test_size  = data_size - train_size
+            # gcn_train_data = gcn_data[:train_size]
+            # gcn_test_data  = gcn_data[train_size:]
 
-        with open(datasetPath + 'processed/all_training_data.p', 'wb') as f:
-            pickle.dump((all_train_dict, all_test_dict, item_list), f)
+            # ========== using gcn data to form nn data ==============
+            # train_data  = torch.cat([gcn_train_data[i][3] for i in range(len(gcn_train_data))])
+            # train_label = torch.cat([gcn_train_data[i][4] for i in range(len(gcn_train_data))])
+            # test_data   = torch.cat([gcn_test_data[i][3] for i in range(len(gcn_test_data))])
+            # test_label  = torch.cat([gcn_test_data[i][4] for i in range(len(gcn_test_data))])
+
+        # with open(datasetPath + 'processed/all_training_data.p', 'wb') as f:
+        #     pickle.dump((nn_train_data, nn_test_data, item_list), f)
 
         with open(datasetPath + 'processed/all_gcn_data.p', 'wb') as f_gcn:
-            pickle.dump((gcn_train_data, gcn_test_data, item_list), f_gcn)
+            pickle.dump((gcn_data, item_list), f_gcn)
     else:
-        f = open(datasetPath + 'processed/all_training_data.p', 'rb')
-        all_train_dict, all_test_dict, item_list = pickle.load(f)
+        # f = open(datasetPath + 'processed/all_training_data.p', 'rb')
+        # nn_train_data, nn_test_data, item_list = pickle.load(f)
 
         f_gcn = open(datasetPath + 'processed/all_gcn_data.p', 'rb')
-        gcn_train_data, gcn_test_data, item_list = pickle.load(f_gcn)
+        gcn_data, item_list = pickle.load(f_gcn)
 
     print('Finish compiling the wildlife trade data into the training format!')
 
-    return (all_train_dict, all_test_dict), (gcn_train_data, gcn_test_data)
+    return gcn_data
 
 
 

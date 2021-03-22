@@ -9,8 +9,8 @@ from torch_geometric.utils import add_self_loops, degree
 
 aggregation_function = 'add' # either mean or add
 
-Conv = GATConv
-# Conv = GraphConv
+Conv = SAGEConv
+# Conv = GCNConv
 
 def linear_block(in_channels, out_channels, activation='ReLU'):
     if activation == 'ReLU':
