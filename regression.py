@@ -70,7 +70,7 @@ if __name__ == '__main__':
     test_data  = test_data[:,-1:]
 
     # plotting histograms
-    threshold = 100
+    threshold = 200
     total_train_frequency = torch.sum(train_label).item()
     outside_train_frequency = len(train_label[train_label > threshold])
     region_train_label = [int(label.item()) if label.item() <= threshold else np.nan for label in train_label]
@@ -108,9 +108,9 @@ if __name__ == '__main__':
     # reg = GaussianProcessRegressor()
     reg.fit(train_data, train_label)
 
-    # train_predict = train_data[:,-1] 
+    train_predict = train_data[:,-1] 
     # train_predict = np.zeros(train_data.shape[0]) 
-    train_predict = reg.predict(train_data)
+    # train_predict = reg.predict(train_data)
     train_r2      = r2_score(train_label, train_predict)
     train_mae     = mean_absolute_error(train_label, train_predict)
     train_mse     = mean_squared_error(train_label, train_predict)
@@ -118,9 +118,9 @@ if __name__ == '__main__':
     train_nmse    = train_mse / normalization_const
     print('training set r2 score: {}, mae: {}, mse: {}, nmse: {}'.format(train_r2, train_mae, train_mse, train_nmse))
 
-    # test_predict = test_data[:,-1]
+    test_predict = test_data[:,-1]
     # test_predict = np.zeros(test_data.shape[0])
-    test_predict = reg.predict(test_data)
+    # test_predict = reg.predict(test_data)
     test_r2      = r2_score(test_label, test_predict)
     test_mae     = mean_absolute_error(test_label, test_predict)
     test_mse     = mean_squared_error(test_label, test_predict)

@@ -271,7 +271,7 @@ def compileData(preprocess=False, processed_trade=None, item_list=None):
                         past_trade = [processed_trade[item_name][route][past_year] for past_year in range(year-10,year)]
                         feature = exporter_info[:200] + importer_info[:200] + past_trade
                         label   = processed_trade[item_name][route][year] # - processed_trade[item_name][route][year-1]
-                        if label != 0:
+                        if label != 0 and label >= 10:
                             all_data.append(feature)
                             all_label.append(label)
                             node_graph.add_edge(country2index[exporter], country2index[importer], feature=feature, label=label)
