@@ -95,7 +95,7 @@ class GCN(nn.Module):
 
 class GCNNN(nn.Module):
     def __init__(self, raw_feature_size, gcn_hidden_layer_sizes=[16, 16], nn_hidden_layer_sizes=[2048, 1024, 32]):
-        super(GCN, self).__init__()
+        super(GCNNN, self).__init__()
 
         r0 = raw_feature_size
         r1, r2 = gcn_hidden_layer_sizes
