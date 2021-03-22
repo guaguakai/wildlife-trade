@@ -60,7 +60,7 @@ if __name__ == '__main__':
 
     # model initiailization
     device = 'cuda'
-    lr = 0.001
+    lr = 0.0005
     fullModel = FullModel(input_size=full_feature_size)
     fullModel = fullModel.to(device=device)
     optimizer = torch.optim.Adam(fullModel.parameters(), lr=lr)
