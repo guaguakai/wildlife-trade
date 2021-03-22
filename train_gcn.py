@@ -92,7 +92,7 @@ if __name__ == '__main__':
                 features = (features - train_mean) / (train_std + 0.001) # for normalization only
                 features = features.to(device=device)
                 labels = labels.to(device=device)
-                # features = features[:,-11:-1]
+                # features = features[:,-10:]
                 edge_index = torch.Tensor(list(edge_graph.edges())).long().t().to(device=device)
                 if len(edge_index) == 0:
                     continue
@@ -119,12 +119,12 @@ if __name__ == '__main__':
                 elif mode == 'test':
                     test_counter  += len(labels)
 
-                r2_list.append(r2)
-                mae_list.append(mae)
-                mse_list.append(mse)
+                r2_list.append(r2 * len(labels))
+                mae_list.append(mae * len(labels))
+                mse_list.append(mse * len(labels))
 
-        train_r2, train_mae, train_mse = np.mean(train_r2_list), np.mean(train_mae_list), np.mean(train_mse_list)
-        test_r2,  test_mae, test_mse  = np.mean(test_r2_list),  np.mean(test_mae_list), np.mean(test_mse_list)
+        train_r2, train_mae, train_mse = np.sum(train_r2_list) / train_counter, np.sum(train_mae_list) / train_counter, np.sum(train_mse_list) / train_counter 
+        test_r2,  test_mae, test_mse   = np.sum(test_r2_list)  / test_counter,  np.sum(test_mae_list)  / test_counter,  np.sum(test_mse_list)  / test_counter 
         train_nmse, test_nmse = train_mse / train_label_mean ** 2, test_mse / test_label_mean ** 2
 
         f_train_result.write('epoch, {}, r2, {}, mae, {}, mse, {}, nmse, {}\n'.format(epoch, train_r2, train_mae, train_mse, train_nmse))

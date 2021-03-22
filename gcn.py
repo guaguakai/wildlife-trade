@@ -7,7 +7,7 @@ from torch_geometric.nn import GCNConv, GraphConv, SAGEConv, GatedGraphConv, GAT
 from torch_geometric.nn import MessagePassing
 from torch_geometric.utils import add_self_loops, degree
 
-aggregation_function = 'add' # either mean or add
+aggregation_function = 'mean' # either mean or add
 
 # Conv = SAGEConv
 Conv = GraphConv
@@ -18,7 +18,7 @@ def linear_block(in_channels, out_channels, activation='ReLU'):
                nn.Linear(in_channels, out_channels),
                nn.BatchNorm1d(out_channels),
                torch.nn.Dropout(p=0.5),
-               nn.ReLU()
+               nn.LeakyReLU()
                )
     elif activation == 'Sigmoid':
         return nn.Sequential(
@@ -33,12 +33,12 @@ def linear_block(in_channels, out_channels, activation='ReLU'):
                )
 
 class GCN(nn.Module):
-    def __init__(self, raw_feature_size, gcn_hidden_layer_sizes=[32, 32], nn_hidden_layer_sizes=[2048, 1024, 32]):
+    def __init__(self, raw_feature_size, gcn_hidden_layer_sizes=[16, 8], nn_hidden_layer_sizes=[128, 8]):
         super(GCN, self).__init__()
 
         r0 = raw_feature_size
         r1, r2 = gcn_hidden_layer_sizes
-        n1, n2, n3 = nn_hidden_layer_sizes
+        n1, n2 = nn_hidden_layer_sizes
 
         # Define the layers of gcn 
         self.gcn1 = Conv(r0, r1, aggr=aggregation_function)
@@ -55,13 +55,13 @@ class GCN(nn.Module):
         self.nn_linear = nn.Sequential(
                 linear_block(r2, n1),
                 linear_block(n1, n2),
-                linear_block(n2, n3),
-                linear_block(n3, 1, activation=None),
+                # linear_block(n2, n3),
+                linear_block(n2, 1, activation=None),
                 )
 
         # self.activation = nn.Softplus()
-        self.activation = F.relu
-        # self.activation = nn.LeakyReLU
+        # self.activation = F.relu
+        self.activation = nn.LeakyReLU()
         # self.activation = nn.Sigmoid()
 
         self.dropout = F.dropout
@@ -94,31 +94,31 @@ class GCN(nn.Module):
         return x
 
 class GCNNN(nn.Module):
-    def __init__(self, raw_feature_size, gcn_hidden_layer_sizes=[16, 16], nn_hidden_layer_sizes=[2048, 1024, 32]):
+    def __init__(self, raw_feature_size, gcn_hidden_layer_sizes=[16, 16], nn_hidden_layer_sizes=[128, 16]):
         super(GCNNN, self).__init__()
 
         r0 = raw_feature_size
         r1, r2 = gcn_hidden_layer_sizes
-        n1, n2, n3 = nn_hidden_layer_sizes
+        n1, n2 = nn_hidden_layer_sizes
 
         #Define the layers of NN to predict the attractiveness function for every node
         self.nn_linear = nn.Sequential(
                 linear_block(r0, n1),
                 linear_block(n1, n2),
-                linear_block(n2, n3),
-                linear_block(n3, 1, activation=None),
+                # linear_block(n2, n3),
+                linear_block(n2, 1, activation=None),
                 )
 
         # self.activation = nn.Softplus()
-        self.activation = F.relu
-        # self.activation = nn.LeakyReLU
+        # self.activation = F.relu
+        self.activation = nn.LeakyReLU()
         # self.activation = nn.Sigmoid()
 
         self.dropout = F.dropout
 
         #self.node_adj=A
 
-    def forward(self, x, edge_index):
+    def forward(self, x):
 
         ''' 
         Input:

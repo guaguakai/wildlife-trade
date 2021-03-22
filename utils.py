@@ -270,7 +270,7 @@ def compileData(preprocess=False, processed_trade=None, item_list=None):
                         importer_info = country2feature[importer]
                         past_trade = [processed_trade[item_name][route][past_year] for past_year in range(year-10,year)]
                         feature = exporter_info[:200] + importer_info[:200] + past_trade
-                        label   = processed_trade[item_name][route][year] # - processed_trade[item_name][route][year-1]
+                        label   = processed_trade[item_name][route][year] - processed_trade[item_name][route][year-1]
                         if label != 0 and label >= 10:
                             all_data.append(feature)
                             all_label.append(label)

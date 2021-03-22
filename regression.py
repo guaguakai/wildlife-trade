@@ -61,9 +61,6 @@ if __name__ == '__main__':
     train_data = (train_data - train_mean) / train_std
     test_data  = (test_data  - train_mean) / train_std
 
-    train_data = train_data[:,-1:]
-    test_data  = test_data[:,-1:]
-
     # plotting histograms
     threshold = 200
     total_train_frequency = torch.sum(train_label).item()
@@ -103,7 +100,7 @@ if __name__ == '__main__':
     # reg = GaussianProcessRegressor()
     reg.fit(train_data, train_label)
 
-    train_predict = train_data[:,-1] 
+    # train_predict = train_data[:,-1] 
     # train_predict = np.zeros(train_data.shape[0]) 
     train_predict = reg.predict(train_data)
     train_r2      = r2_score(train_label, train_predict)
@@ -122,4 +119,51 @@ if __name__ == '__main__':
     normalization_const = (torch.mean(test_label)) ** 2
     test_nmse    = test_mse / normalization_const
     print('testing set r2 score: {}, mae: {}, mse: {}, nmse: {}'.format(test_r2, test_mae, test_mse, test_nmse))
+
+
+    # testing another way to compute the loss
+    train_r2_list, train_mae_list, train_mse_list = [], [], []
+    test_r2_list,  test_mae_list,  test_mse_list  = [], [], []
+
+    train_counter, test_counter = 0, 0
+    loaders = [
+            ('train', gcn_train_data, train_r2_list, train_mae_list, train_mse_list),
+            ('test',  gcn_test_data,  test_r2_list,  test_mae_list,  test_mse_list)
+            ]
+
+    for mode, loader, r2_list, mae_list, mse_list in loaders:
+        for _, _, edge_graph, features, labels, route2index in tqdm.tqdm(loader):
+            if len(features) == 0:
+                continue
+            features = (features - train_mean) / (train_std + 0.001) # for normalization only
+            edge_index = torch.Tensor(list(edge_graph.edges())).long().t()
+            if len(edge_index) == 0:
+                continue
+
+            predictions = reg.predict(features)
+            labels = labels.detach().numpy()
+
+            r2      = r2_score(labels, predictions)
+            mae     = mean_absolute_error(labels, predictions).item()
+            mse     = mean_squared_error(labels, predictions).item()
+            if mode == 'train':
+                train_counter += len(labels)
+            elif mode == 'test':
+                test_counter  += len(labels)
+
+            r2_list.append(r2 * len(labels))
+            mae_list.append(mae * len(labels))
+            mse_list.append(mse * len(labels))
+
+    train_label_mean = torch.mean(torch.cat([gcn_train_data[i][4] for i in range(len(gcn_train_data))]))
+    test_label_mean  = torch.mean(torch.cat([gcn_test_data[i][4]  for i in range(len(gcn_test_data))]))
+
+    train_r2, train_mae, train_mse = np.sum(train_r2_list) / train_counter, np.sum(train_mae_list) / train_counter, np.sum(train_mse_list) / train_counter
+    test_r2,  test_mae, test_mse   = np.sum(test_r2_list)  / test_counter,  np.sum(test_mae_list)  / test_counter,  np.sum(test_mse_list)  / test_counter
+    train_nmse, test_nmse = train_mse / train_label_mean ** 2, test_mse / test_label_mean ** 2
+
+    print('training set r2 score: {}, mae: {}, mse: {}, nmse: {}'.format(train_r2, train_mae, train_mse, train_nmse))
+    print('testing set r2 score: {},  mae: {}, mse: {}, nmse: {}'.format(test_r2, test_mae, test_mse, test_nmse))
+
+
 
