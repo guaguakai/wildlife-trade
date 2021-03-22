@@ -9,8 +9,8 @@ from torch_geometric.utils import add_self_loops, degree
 
 aggregation_function = 'add' # either mean or add
 
-Conv = SAGEConv
-# Conv = GraphConv
+# Conv = SAGEConv
+Conv = GraphConv
 
 def linear_block(in_channels, out_channels, activation='ReLU'):
     if activation == 'ReLU':
@@ -77,10 +77,10 @@ class GCN(nn.Module):
         '''
 
         x = self.activation(self.gcn1(x, edge_index))
-        x = self.dropout(x)
+        # x = self.dropout(x)
         x = self.batchnorm1(x)
         x = self.activation(self.gcn2(x, edge_index))
-        x = self.dropout(x)
+        # x = self.dropout(x)
         x = self.batchnorm2(x)
         # x = self.activation(self.gcn3(x, edge_index))
         # x = self.dropout(x)
