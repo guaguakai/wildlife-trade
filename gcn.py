@@ -9,8 +9,8 @@ from torch_geometric.utils import add_self_loops, degree
 
 aggregation_function = 'add' # either mean or add
 
-Conv = SAGEConv
-# Conv = GCNConv
+# Conv = SAGEConv
+Conv = GCNConv
 
 def linear_block(in_channels, out_channels, activation='ReLU'):
     if activation == 'ReLU':
@@ -33,28 +33,28 @@ def linear_block(in_channels, out_channels, activation='ReLU'):
                )
 
 class GCN(nn.Module):
-    def __init__(self, raw_feature_size, gcn_hidden_layer_sizes=[32, 24, 16, 11], nn_hidden_layer_sizes=[1024, 512, 32]):
+    def __init__(self, raw_feature_size, gcn_hidden_layer_sizes=[32, 24, 16], nn_hidden_layer_sizes=[2048, 1024, 32]):
         super(GCN, self).__init__()
 
         r0 = raw_feature_size
-        r1, r2, r3, r4 = gcn_hidden_layer_sizes
+        r1, r2, r3 = gcn_hidden_layer_sizes
         n1, n2, n3 = nn_hidden_layer_sizes
 
         # Define the layers of gcn 
         self.gcn1 = Conv(r0, r1, aggr=aggregation_function)
         self.gcn2 = Conv(r1, r2, aggr=aggregation_function)
         self.gcn3 = Conv(r2, r3, aggr=aggregation_function)
-        self.gcn4 = Conv(r3, r4, aggr=aggregation_function)
+        # self.gcn4 = Conv(r3, r4, aggr=aggregation_function)
 
         self.batchnorm1 = BatchNorm(r1)
         self.batchnorm2 = BatchNorm(r2)
         self.batchnorm3 = BatchNorm(r3)
-        self.batchnorm4 = BatchNorm(r4)
+        # self.batchnorm4 = BatchNorm(r4)
 
         #Define the layers of NN to predict the attractiveness function for every node
         # self.fc1 = nn.Linear(r2, 1)
         self.nn_linear = nn.Sequential(
-                linear_block(r4, n1),
+                linear_block(r3, n1),
                 linear_block(n1, n2),
                 linear_block(n2, n3),
                 linear_block(n3, 1, activation=None),
@@ -86,9 +86,9 @@ class GCN(nn.Module):
         x = self.activation(self.gcn3(x, edge_index))
         x = self.dropout(x)
         x = self.batchnorm3(x)
-        x = self.activation(self.gcn4(x, edge_index))
-        x = self.dropout(x)
-        x = self.batchnorm4(x)
+        # x = self.activation(self.gcn4(x, edge_index))
+        # x = self.dropout(x)
+        # x = self.batchnorm4(x)
 
         x = self.nn_linear(x)
 
