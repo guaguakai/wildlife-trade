@@ -17,7 +17,7 @@ from torch.utils.data import TensorDataset, DataLoader
 
 from utils import processTradeData, readTradeData, readCountry, readWorldIndicators, compileData
 from model import FullModel
-from gcn import GCN
+from gcn import GCNNN
 
 if __name__ == '__main__':
     preprocess = False
@@ -60,7 +60,7 @@ if __name__ == '__main__':
     # model initiailization
     device = 'cuda'
     lr = 0.001
-    model = GCN(raw_feature_size=full_feature_size)
+    model = GCNNN(raw_feature_size=full_feature_size)
     model = model.to(device=device)
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 
@@ -69,8 +69,8 @@ if __name__ == '__main__':
     mae_loss = nn.L1Loss()
     loss_fn = mse_loss
 
-    f_train_result = open('results/gcn/train.csv', 'a')
-    f_test_result  = open('results/gcn/test.csv', 'a')
+    f_train_result = open('results/gcn_nn/train.csv', 'a')
+    f_test_result  = open('results/gcn_nn/test.csv', 'a')
 
     # training
     for epoch in range(10001):

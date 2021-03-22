@@ -52,8 +52,8 @@ if __name__ == '__main__':
     # normalization
     train_mean = torch.mean(train_data, dim=0)
     train_std  = torch.std(train_data, dim=0)
-    train_mean[-10:] = 0
-    train_std[-10:] = 1
+    # train_mean[-10:] = 0
+    # train_std[-10:] = 1
 
     train_data = (train_data - train_mean) / train_std
     test_data  = (test_data  - train_mean) / train_std
