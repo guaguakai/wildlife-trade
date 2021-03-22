@@ -85,6 +85,8 @@ if __name__ == '__main__':
                 labels = labels.to(device=device)
                 # features = features[:,-11:-1]
                 edge_index = torch.Tensor(list(edge_graph.edges())).long().t().to(device=device)
+                if len(edge_index) == 0:
+                    continue
 
                 if mode == 'train':
                     model.train()

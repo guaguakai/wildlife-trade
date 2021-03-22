@@ -9,7 +9,8 @@ from torch_geometric.utils import add_self_loops, degree
 
 aggregation_function = 'add' # either mean or add
 
-Conv = GraphConv
+Conv = GATConv
+# Conv = GraphConv
 
 def linear_block(in_channels, out_channels, activation='ReLU'):
     if activation == 'ReLU':
@@ -32,7 +33,7 @@ def linear_block(in_channels, out_channels, activation='ReLU'):
                )
 
 class GCN(nn.Module):
-    def __init__(self, raw_feature_size, gcn_hidden_layer_sizes=[128, 128, 64, 64], nn_hidden_layer_sizes=[2048, 1024, 32]):
+    def __init__(self, raw_feature_size, gcn_hidden_layer_sizes=[32, 24, 16, 11], nn_hidden_layer_sizes=[1024, 512, 32]):
         super(GCN, self).__init__()
 
         r0 = raw_feature_size

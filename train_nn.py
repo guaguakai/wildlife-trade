@@ -18,7 +18,7 @@ from utils import processTradeData, readTradeData, readCountry, readWorldIndicat
 from model import FullModel
 
 if __name__ == '__main__':
-    preprocess = True
+    preprocess = False
     restart = False
 
     WDI_df = readWorldIndicators()
