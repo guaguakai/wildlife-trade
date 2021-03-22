@@ -11,10 +11,11 @@ from matplotlib.animation import FuncAnimation
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 
 import torch
+import torch.nn as nn
 from torch.utils.data import TensorDataset, DataLoader
 
 from utils import processTradeData, readTradeData, readCountry, readWorldIndicators, compileData
-from model import *
+from model import FullModel
 from gcn import GCN
 
 if __name__ == '__main__':

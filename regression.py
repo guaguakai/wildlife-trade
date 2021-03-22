@@ -3,6 +3,7 @@ import numpy as np
 import pickle
 import tqdm
 import os
+import torch
 
 from os import path
 from mpl_toolkits.basemap import Basemap
@@ -17,7 +18,7 @@ from sklearn import preprocessing
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.utils import shuffle
 
-from utils import *
+from utils import processTradeData, readTradeData, readCountry, readWorldIndicators, compileData
 
 if __name__ == '__main__':
     preprocess = False
@@ -31,6 +32,7 @@ if __name__ == '__main__':
     else:
         all_trade_df = None
     processed_trade, item_list = processTradeData(all_trade_df, restart=restart)
+    item_list = item_list[:10]
     (all_train_dict, all_test_dict), _ = compileData(preprocess=preprocess, processed_trade=processed_trade, item_list=item_list)
 
     full_feature_size = 410
@@ -58,8 +60,8 @@ if __name__ == '__main__':
     # normalization
     train_mean = torch.mean(train_data, dim=0)
     train_std  = torch.std(train_data, dim=0)
-    train_mean[-10:] = 0
-    train_std[-10:] = 1
+    # train_mean[-10:] = 0
+    # train_std[-10:] = 1
 
     train_data = (train_data - train_mean) / train_std
     test_data  = (test_data  - train_mean) / train_std
@@ -68,11 +70,36 @@ if __name__ == '__main__':
     test_data  = test_data[:,-1:]
 
     # plotting histograms
-    # sns.displot(x=train_label)
-    # plt.show()
+    threshold = 100
+    total_train_frequency = torch.sum(train_label).item()
+    outside_train_frequency = len(train_label[train_label > threshold])
+    region_train_label = [int(label.item()) if label.item() <= threshold else np.nan for label in train_label]
 
-    # sns.displot(x=test_label)
-    # plt.show()
+    # plt.tight_layout(pad=0)
+    plt.figure(figsize=(10,7))
+    ax_train = sns.histplot(x=region_train_label, stat='frequency')
+    # ax_train.set(xlabel='Trading frequency per route', ylabel='# routes')
+    plt.xlabel('Trading frequency per route', fontsize=16)
+    plt.ylabel('# routes', fontsize=16)
+    plt.title('Training Route Frequency Histogram \n ({:.3f} % of routes with frequency > {})'.format(outside_train_frequency / total_train_frequency * 100, threshold), fontsize=16)
+    plt.savefig('results/plots/train_distribution.png')
+    plt.close()
+    print('Training outlier', outside_train_frequency / total_train_frequency)
+
+    total_test_frequency = torch.sum(test_label).item()
+    outside_test_frequency = len(test_label[test_label > threshold])
+    region_test_label = [int(label.item()) if label.item() <= threshold else np.nan for label in test_label]
+
+    # plt.tight_layout(pad=0)
+    plt.figure(figsize=(10,7))
+    ax_test = sns.histplot(x=region_test_label, stat='frequency')
+    # ax_test.set(xlabel='Trading frequency per route', ylabel='# routes')
+    plt.xlabel('Trading frequency per route', fontsize=16)
+    plt.ylabel('# routes', fontsize=16)
+    plt.title('Testing Route Frequency Histogram \n ({:.2f} % of routes with frequency > {})'.format(outside_test_frequency / total_test_frequency * 100, threshold), fontsize=16)
+    plt.savefig('results/plots/test_distribution.png')
+    plt.close()
+    print('Testing outlier', outside_test_frequency / total_test_frequency)
 
     # setting up regression model
     # reg = linear_model.TweedieRegressor(power=1, alpha=0.5, link='log')
@@ -81,9 +108,9 @@ if __name__ == '__main__':
     # reg = GaussianProcessRegressor()
     reg.fit(train_data, train_label)
 
-    train_predict = train_data[:,-1] 
+    # train_predict = train_data[:,-1] 
     # train_predict = np.zeros(train_data.shape[0]) 
-    # train_predict = reg.predict(train_data)
+    train_predict = reg.predict(train_data)
     train_r2      = r2_score(train_label, train_predict)
     train_mae     = mean_absolute_error(train_label, train_predict)
     train_mse     = mean_squared_error(train_label, train_predict)
@@ -91,9 +118,9 @@ if __name__ == '__main__':
     train_nmse    = train_mse / normalization_const
     print('training set r2 score: {}, mae: {}, mse: {}, nmse: {}'.format(train_r2, train_mae, train_mse, train_nmse))
 
-    test_predict = test_data[:,-1]
+    # test_predict = test_data[:,-1]
     # test_predict = np.zeros(test_data.shape[0])
-    # test_predict = reg.predict(test_data)
+    test_predict = reg.predict(test_data)
     test_r2      = r2_score(test_label, test_predict)
     test_mae     = mean_absolute_error(test_label, test_predict)
     test_mse     = mean_squared_error(test_label, test_predict)
