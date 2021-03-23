@@ -101,22 +101,22 @@ if __name__ == '__main__':
     reg.fit(train_data, train_label)
 
     # train_predict = train_data[:,-1] 
-    train_predict = np.zeros(train_data.shape[0]) 
-    # train_predict = reg.predict(train_data)
+    # train_predict = np.zeros(train_data.shape[0]) 
+    train_predict = reg.predict(train_data)
     train_r2      = r2_score(train_label, train_predict)
     train_mae     = mean_absolute_error(train_label, train_predict)
     train_mse     = mean_squared_error(train_label, train_predict)
-    normalization_const = (torch.mean(train_label)) ** 2
+    normalization_const = (torch.mean(torch.abs(train_label))) ** 2
     train_nmse    = train_mse / normalization_const
     print('training set r2 score: {}, mae: {}, mse: {}, nmse: {}'.format(train_r2, train_mae, train_mse, train_nmse))
 
     # test_predict = test_data[:,-1]
-    test_predict = np.zeros(test_data.shape[0])
-    # test_predict = reg.predict(test_data)
+    # test_predict = np.zeros(test_data.shape[0])
+    test_predict = reg.predict(test_data)
     test_r2      = r2_score(test_label, test_predict)
     test_mae     = mean_absolute_error(test_label, test_predict)
     test_mse     = mean_squared_error(test_label, test_predict)
-    normalization_const = (torch.mean(test_label)) ** 2
+    normalization_const = (torch.mean(torch.abs(test_label))) ** 2
     test_nmse    = test_mse / normalization_const
     print('testing set r2 score: {}, mae: {}, mse: {}, nmse: {}'.format(test_r2, test_mae, test_mse, test_nmse))
 
@@ -155,8 +155,8 @@ if __name__ == '__main__':
             mae_list.append(mae * len(labels))
             mse_list.append(mse * len(labels))
 
-    train_label_mean = torch.mean(torch.cat([gcn_train_data[i][4] for i in range(len(gcn_train_data))]))
-    test_label_mean  = torch.mean(torch.cat([gcn_test_data[i][4]  for i in range(len(gcn_test_data))]))
+    train_label_mean = torch.mean(torch.abs(torch.cat([gcn_train_data[i][4] for i in range(len(gcn_train_data))])))
+    test_label_mean  = torch.mean(torch.abs(torch.cat([gcn_test_data[i][4]  for i in range(len(gcn_test_data))])))
 
     train_r2, train_mae, train_mse = np.sum(train_r2_list) / train_counter, np.sum(train_mae_list) / train_counter, np.sum(train_mse_list) / train_counter
     test_r2,  test_mae, test_mse   = np.sum(test_r2_list)  / test_counter,  np.sum(test_mae_list)  / test_counter,  np.sum(test_mse_list)  / test_counter

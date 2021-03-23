@@ -42,8 +42,8 @@ if __name__ == '__main__':
 
     full_feature_size = 410 # 10
 
-    train_label_mean = torch.mean(torch.cat([gcn_train_data[i][4] for i in range(len(gcn_train_data))]))
-    test_label_mean  = torch.mean(torch.cat([gcn_test_data[i][4]  for i in range(len(gcn_test_data))]))
+    train_label_mean = torch.mean(torch.abs(torch.cat([gcn_train_data[i][4] for i in range(len(gcn_train_data))])))
+    test_label_mean  = torch.mean(torch.abs(torch.cat([gcn_test_data[i][4]  for i in range(len(gcn_test_data))])))
 
     # compute normalizing constant
     all_train_features = []
@@ -73,7 +73,7 @@ if __name__ == '__main__':
     f_test_result  = open('results/gcn/test.csv', 'a')
 
     # training
-    for epoch in range(10001):
+    for epoch in range(2001):
         train_r2_list, train_mae_list, train_mse_list = [], [], []
         test_r2_list,  test_mae_list,  test_mse_list  = [], [], []
     

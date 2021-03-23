@@ -81,7 +81,7 @@ if __name__ == '__main__':
     f_test_result  = open('results/nn/test.csv', 'a')
 
     # training
-    for epoch in range(5001):
+    for epoch in range(2001):
         train_r2_list, train_mae_list, train_mse_list = [], [], []
         test_r2_list,  test_mae_list,  test_mse_list  = [], [], []
         loaders = [
@@ -116,7 +116,7 @@ if __name__ == '__main__':
 
         train_r2, train_mae, train_mse = np.mean(train_r2_list), np.mean(train_mae_list), np.mean(train_mse_list)
         test_r2,  test_mae,  test_mse  = np.mean(test_r2_list),  np.mean(test_mae_list),  np.mean(test_mse_list)
-        train_nmse, test_nmse = train_mse / torch.mean(train_label) ** 2, test_mse / torch.mean(test_label) ** 2
+        train_nmse, test_nmse = train_mse / torch.mean(torch.abs(train_label)) ** 2, test_mse / torch.mean(torch.abs(test_label)) ** 2
 
         f_train_result.write('epoch, {}, r2, {}, mae, {}, mse, {}, nmse, {}\n'.format(epoch, train_r2, train_mae, train_mse, train_nmse))
         f_test_result.write('epoch, {}, r2, {}, mae, {}, mse, {}, nmse, {}\n'.format(epoch, test_r2, test_mae, test_mse, test_nmse))
