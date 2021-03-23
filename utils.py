@@ -19,7 +19,7 @@ from sklearn.utils import shuffle
 
 from collections import Counter
 
-datasetPath = '../data/'
+datasetPath = 'data/'
 rm_quote = lambda x: x.replace('"', '').replace(' ', '')
 rm_quote_float = lambda x: float(x.replace('"', '').replace(' ', ''))
 
@@ -189,7 +189,7 @@ def readTranstats(restart=False):
         f = open(processed_filename, 'rb')
         transtats_dict = pickle.load(f)
     else:
-        filepath = '../data/transtats/'
+        filepath = datasetPath + '/transtats/'
         transtats_dict = {}
         for year in range(1990, 2020):
             print('Processing year: {}...'.format(year))
@@ -494,7 +494,7 @@ def plotFlights(trade_df, country2ll, item_name, count):
 #     plt.show()
 
 def readGDP():
-    filename = '../data/raw/GDP.csv'
+    filename = datasetPath + '/raw/GDP.csv'
     GDP_df = pd.read_csv(filename).fillna(0)
     return GDP_df
 
